@@ -1,4 +1,8 @@
-<script>
+// ===============================================================
+// 漢字の刃（1ページ型）の画面の動き
+//   GitHub Pages に置き、GAS の外枠（App.html）から読み込まれる。
+//   データはすべて google.script.run の api() 経由。個人情報・正解・確率はこのファイルに書かない。
+// ===============================================================
 (function () {
   'use strict';
 
@@ -6,9 +10,19 @@
   const SESSION_STORE_KEY = 'kanji_app_session';   // { token, exp }
   const LEGACY_NUM_KEY = 'kanji_num';              // 今の画面（Gacha.html など）が使う出席番号
   const REFRESH_MS = 300000;                       // マイページを5分ごとに読み直す（今のマイページと同じ）
+  const CONFIG = window.KANJI_CONFIG || {};        // App.html が入れる { assetBase, assetVersion }
 
   const state = { token: null, player: null, settings: {}, view: null, refreshTimer: null, jamaicaDone: false };
   const $ = (id) => document.getElementById(id);
+
+  // ==================== 素材（画像・効果音）のURL ====================
+  // 例：KanjiAssets.url('assets/sound/gacha_open.mp3')
+  //   版の番号を付けるので、GAS のスクリプトのプロパティ ASSET_VERSION を上げるとすぐ新しいファイルに切り替わる
+  function assetUrl(path) {
+    const v = CONFIG.assetVersion ? (String(path).indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(CONFIG.assetVersion) : '';
+    return (CONFIG.assetBase || '') + String(path).replace(/^\//, '') + v;
+  }
+  window.KanjiAssets = { url: assetUrl };
 
   // ==================== 保存（使えない端末でも止まらないようにする） ====================
   function storeGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
@@ -271,4 +285,3 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
 })();
-</script>
